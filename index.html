@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SpiderBot Controller</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <style>
+        :root {
+            --spidey-blue: #001f3f;
+            --spidey-red: #8b0000;
+            --glass: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+            /* Estilo Spidey: Gradiente Lineal */
+            background: linear-gradient(135deg, var(--spidey-blue), var(--spidey-red));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Contenedor Principal (Landscape Orientado) */
+        #app-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            grid-template-rows: 1fr 1fr 1fr;
+            padding: 20px;
+        }
+
+        /* Vista de Cámara (Fondo) */
+        #camera-view {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 80%;
+            border: 3px solid #ff9800; /* Color naranja según tu boceto */
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1;
+            border-radius: 10px;
+        }
+
+        .camera-label {
+            color: rgba(255,255,255,0.5);
+            font-size: 1.2rem;
+        }
+
+        /* Paneles de Control (Estilo Glassmorphism) */
+        .control-panel {
+            background: var(--glass);
+            backdrop-filter: blur(5px);
+            border-radius: 15px;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px;
+            transition: background 0.3s;
+        }
+
+        .control-panel:hover {
+            background: rgba(255, 255, 255, 0.2); /* Efecto hover solicitado */
+        }
+
+        /* Alertas de Proximidad */
+        .proximity-alert {
+            position: absolute;
+            width: 40px;
+            height: 40%;
+            border: 2px solid #007bff;
+            top: 30%;
+            z-index: 3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        #alert-left { left: 10px; }
+        #alert-right { right: 10px; }
+
+        .alert-active {
+            background: rgba(255, 0, 0, 0.4);
+            animation: blink 0.5s infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0.3; }
+        }
+
+        /* Botones Circulares */
+        .btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 2px solid white;
+            background: var(--glass);
+            color: white;
+            font-size: 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .btn:active {
+            background: rgba(255, 255, 255, 0.4);
+            transform: scale(0.95);
+        }
+
+        /* Botón Conectar (Especial) */
+        #connect-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 4;
+            padding: 10px 20px;
+            border-radius: 20px;
+            background: #28a745;
+            border: none;
+            color: white;
+            font-weight: bold;
+        }
+
+        #buzzer-btn { color: #ff0000; font-size: 2rem; }
+
+        /* Mensaje de rotación */
+        @media (orientation: portrait) {
+            #app-container { display: none; }
+            #rotation-msg { display: flex; }
+        }
+
+        #rotation-msg {
+            display: none;
+            text-align: center;
+            flex-direction: column;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="rotation-msg">
+        <h2>🔄 Por favor, rota tu celular</h2>
+        <p>Esta interfaz de control del SpiderBot requiere modo horizontal.</p>
+    </div>
+
+    <button id="connect-btn" onclick="initControl()">CONECTAR SPIDERBOT</button>
+
+    <div id="app-container">
+        <div class="control-panel" style="grid-row: 2/3; grid-column: 1/2;">
+            <div class="btn" onmousedown="sendCommand('rot_L')">←</div>
+            <span>ROTAR</span>
+            <div class="btn" onmousedown="sendCommand('rot_R')">→</div>
+        </div>
+
+        <div id="alert-left" class="proximity-alert">ALERTA PROXIMIDAD</div>
+
+        <div id="camera-view">
+            <span class="camera-label">CÁMARA DEL SPIDERBOT (POV)</span>
+            </div>
+
+        <div class="control-panel" style="grid-row: 1/2; grid-column: 3/4;">
+            <div class="btn" id="buzzer-btn" onclick="sendCommand('buzzer')">🔔</div>
+        </div>
+
+        <div id="alert-right" class="proximity-alert">ALERTA PROXIMIDAD</div>
+
+        <div class="control-panel" style="grid-row: 2/4; grid-column: 3/4;">
+            <div class="btn" onmousedown="sendCommand('fwd')">↑</div>
+            <span>MOVERSE</span>
+            <div class="btn" onmousedown="sendCommand('bwd')">↓</div>
+        </div>
+    </div>
+
+    <script>
+        function initControl() {
+            // 1. Intentar Pantalla Completa
+            const doc = window.document;
+            const docEl = doc.documentElement;
+
+            const requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
+
+            if (requestFullScreen) {
+                requestFullScreen.call(docEl);
+            }
+
+            // 2. Simular Conexión
+            const btn = document.getElementById('connect-btn');
+            btn.innerHTML = "CONECTADO";
+            btn.style.background = "#007bff";
+            
+            console.log("Iniciando conexión WebSocket con Spiderbot...");
+            // Aquí agregarás la IP de tu ESP32 más adelante
+        }
+
+        function sendCommand(cmd) {
+            console.log("Enviando comando: " + cmd);
+            // Lógica para enviar vía WebSocket
+            
+            // Ejemplo de activación de alerta visual de proximidad
+            if(cmd === 'fwd') {
+                document.getElementById('alert-left').classList.toggle('alert-active');
+            }
+        }
+
+        // Prevenir scroll por accidente en iOS
+        document.addEventListener('touchmove', function(e) {
+            e.preventDefault();
+        }, { passive: false });
+    </script>
+</body>
+</html>
