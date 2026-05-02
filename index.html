@@ -65,18 +65,27 @@
 
         /* Botón de Conexión */
         #connect-btn {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 100;
-            padding: 10px 20px;
-            border-radius: 25px;
-            background: #28a745;
-            border: 2px solid white;
+        position: absolute;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 100;
+        padding: 10px 20px;
+        border-radius: 25px;
+        background: #28a745; /* Verde por defecto */
+        border: 2px solid white;
+        color: white;
+        font-weight: bold;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        transition: all 0.2s ease; /* Transición suave */
+        }
+        
+        /* Efecto al presionar (hover/active) con blanco translúcido */
+        #connect-btn:active, #connect-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
             color: white;
-            font-weight: bold;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            transform: translateX(-50%) scale(0.95);
+            box-shadow: 0 2px 8px rgba(255,255,255,0.4);
         }
 
         /* Paneles de Control (Glassmorphism) */
@@ -134,8 +143,8 @@
             background: rgba(0, 123, 255, 0.1);
             transition: background 0.3s;
         }
-        .alert-L { left: 150px; }
-        .alert-R { right: 150px; }
+        .alert-L { left: 200px; }
+        .alert-R { right: 200px; }
 
         /* Buzzer Icon */
         #buzzer-area {
@@ -202,6 +211,7 @@
     <script>
         let socket;
         // EDITAR ESTAS IPS CON LAS QUE SALGAN EN TU MONITOR SERIAL
+        // Reemplaza las variables en tu script con esto:
         const IP_C6 = "172.20.10.3"; // Cerebro (Control)
         const IP_S3 = "172.20.10.2"; // Cámara (Video)
 
