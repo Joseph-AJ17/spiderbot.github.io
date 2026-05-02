@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SpiderBot Pro</title>
+    <title>SpiderBot Control</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
@@ -12,118 +12,132 @@
             --spidey-blue: #001f3f;
             --spidey-red: #8b0000;
             --glass: rgba(255, 255, 255, 0.1);
-            /* Variable dinámica para el alto real en móviles */
             --vh: 1vh;
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+        * { 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent; 
+            user-select: none; 
+        }
 
         body {
             margin: 0;
             padding: 0;
-            /* Usamos la variable --vh para el alto exacto */
             height: calc(var(--vh, 1vh) * 100);
             width: 100vw;
             overflow: hidden;
-            font-family: sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, var(--spidey-blue), var(--spidey-red));
             color: white;
         }
 
-        /* Botón Conectar - Flotante arriba */
-        #connect-btn {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 100;
-            padding: 8px 15px;
-            border-radius: 20px;
-            background: #28a745;
-            border: 2px solid white;
-            color: white;
-            font-weight: bold;
-            font-size: 12px;
-        }
-
+        /* Contenedor Principal */
         #app-container {
             display: grid;
-            grid-template-columns: 120px 1fr 120px;
-            grid-template-rows: 60px 1fr 60px;
+            grid-template-columns: 140px 1fr 140px;
+            grid-template-rows: 70px 1fr 70px;
             height: 100%;
             width: 100%;
-            padding: 10px 20px;
+            padding: 15px 30px; /* Margen para evitar bordes curvos del iPhone */
             gap: 10px;
         }
 
-        /* Cámara - Capa inferior */
+        /* Vista de Cámara (XIAO ESP32-S3) */
         #camera-view {
             grid-column: 1 / 4;
             grid-row: 1 / 4;
             border: 2px solid #ff9800;
             background: #000;
-            border-radius: 15px;
+            border-radius: 20px;
+            z-index: 1;
+            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 1;
-            margin: 5px;
         }
 
-        /* Paneles laterales - Estilo Glass */
+        #camera-view img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Botón de Conexión */
+        #connect-btn {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            padding: 10px 20px;
+            border-radius: 25px;
+            background: #28a745;
+            border: 2px solid white;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        /* Paneles de Control (Glassmorphism) */
         .panel {
             z-index: 10;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.6);
             backdrop-filter: blur(10px);
-            border-radius: 20px;
+            border-radius: 25px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            gap: 15px;
+            gap: 20px;
             border: 1px solid rgba(255,255,255,0.2);
         }
 
         .panel-left { grid-column: 1; grid-row: 2; }
         .panel-right { grid-column: 3; grid-row: 2; }
 
-        /* Botones Circulares */
+        /* Botones de Acción */
         .btn {
-            width: 55px;
-            height: 55px;
+            width: 65px;
+            height: 65px;
             border-radius: 50%;
             border: 2px solid white;
             background: var(--glass);
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 24px;
+            font-size: 28px;
+            transition: all 0.2s;
         }
 
-        .btn:active { background: white; color: black; }
+        .btn:active { 
+            background: white; 
+            color: black; 
+            transform: scale(0.9);
+        }
 
-        /* Alertas de Proximidad - Pegadas a los bordes */
+        /* Alertas de Proximidad (VL53L0X) */
         .alert {
             position: absolute;
-            top: 20%;
-            bottom: 20%;
-            width: 30px;
+            top: 25%;
+            bottom: 25%;
+            width: 35px;
             border: 2px solid #007bff;
             z-index: 5;
             display: flex;
             align-items: center;
             justify-content: center;
             writing-mode: vertical-rl;
-            font-size: 10px;
+            font-size: 11px;
             font-weight: bold;
-            background: rgba(0, 123, 255, 0.2);
-            border-radius: 5px;
-            padding: 2px;
+            border-radius: 8px;
+            background: rgba(0, 123, 255, 0.1);
+            transition: background 0.3s;
         }
         .alert-L { left: 150px; }
         .alert-R { right: 150px; }
 
-        /* Icono Buzzer arriba a la derecha */
+        /* Buzzer Icon */
         #buzzer-area {
             grid-column: 3;
             grid-row: 1;
@@ -133,7 +147,7 @@
             z-index: 10;
         }
 
-        /* Mensaje de rotación forzado */
+        /* Overlay de Rotación */
         #rotation-overlay {
             display: none;
             position: fixed;
@@ -154,60 +168,86 @@
 <body>
 
     <div id="rotation-overlay">
-        <h1>🔄 ROTAR TELÉFONO</h1>
-        <p>Para controlar el SpiderBot usa el modo horizontal.</p>
+        <h1>🔄 ROTAR DISPOSITIVO</h1>
+        <p>Activa el modo horizontal para controlar el SpiderBot.</p>
     </div>
 
-    <button id="connect-btn" onclick="initApp()">CONECTAR</button>
+    <button id="connect-btn" onclick="initApp()">CONECTAR SPIDERBOT</button>
 
     <div id="app-container">
-        <div id="camera-view">CÁMARA SPIDERBOT POV</div>
+        <div id="camera-view">
+            <img id="stream-img" src="" alt="Esperando transmisión...">
+        </div>
 
-        <div class="alert alert-L">PROXIMIDAD IZQ</div>
-        <div class="alert alert-R">PROXIMIDAD DER</div>
+        <div id="alert-L" class="alert alert-L">PROXIMIDAD IZQ</div>
+        <div id="alert-R" class="alert alert-R">PROXIMIDAD DER</div>
 
         <div class="panel panel-left">
-            <div class="btn" onmousedown="send('L')">←</div>
+            <div class="btn" ontouchstart="send('L')" ontouchend="send('S')">←</div>
             <small>ROTAR</small>
-            <div class="btn" onmousedown="send('R')">→</div>
+            <div class="btn" ontouchstart="send('R')" ontouchend="send('S')">→</div>
         </div>
 
         <div id="buzzer-area">
-            <div class="btn" style="border-color: red;" onclick="send('B')">🔔</div>
+            <div class="btn" style="border-color: #ff4444; font-size: 22px;" ontouchstart="send('B')" ontouchend="send('Q')">🔔</div>
         </div>
 
         <div class="panel panel-right">
-            <div class="btn" onmousedown="send('F')">↑</div>
+            <div class="btn" ontouchstart="send('F')" ontouchend="send('S')">↑</div>
             <small>MOVER</small>
-            <div class="btn" onmousedown="send('B')">↓</div>
+            <div class="btn" ontouchstart="send('BWD')" ontouchend="send('S')">↓</div>
         </div>
     </div>
 
     <script>
-        // Función para arreglar el alto en móviles
+        let socket;
+        // EDITAR ESTAS IPS CON LAS QUE SALGAN EN TU MONITOR SERIAL
+        const IP_C6 = "172.20.10.3"; // Cerebro (Control)
+        const IP_S3 = "172.20.10.2"; // Cámara (Video)
+
+        // Ajuste de altura para móviles
         function setDocHeight() {
-            let vh = window.innerHeight * 0.01;
-            document.documentElement.style.setProperty('--vh', `${vh}px`);
+            document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
         }
         window.addEventListener('resize', setDocHeight);
-        window.addEventListener('orientationchange', setDocHeight);
         setDocHeight();
 
         function initApp() {
-            const btn = document.getElementById('connect-btn');
-            btn.innerText = "CONECTADO";
-            btn.style.background = "#007bff";
+            // Conectar el video
+            document.getElementById('stream-img').src = `http://${IP_S3}:81/stream`;
+
+            // Conectar WebSockets a la XIAO C6
+            socket = new WebSocket(`ws://${IP_C6}:81`);
             
-            // Forzar pantalla completa
-            if (document.documentElement.requestFullscreen) {
-                document.documentElement.requestFullscreen();
-            }
+            socket.onopen = () => {
+                const btn = document.getElementById('connect-btn');
+                btn.innerText = "CONECTADO";
+                btn.style.background = "#007bff";
+            };
+
+            socket.onmessage = (event) => {
+                const data = event.data;
+                // Manejo de alertas visuales según sensores VL53L0X
+                if(data === "L_CERCA") document.getElementById('alert-L').style.background = "rgba(255, 0, 0, 0.8)";
+                if(data === "L_LIBRE") document.getElementById('alert-L').style.background = "rgba(0, 123, 255, 0.1)";
+                if(data === "R_CERCA") document.getElementById('alert-R').style.background = "rgba(255, 0, 0, 0.8)";
+                if(data === "R_LIBRE") document.getElementById('alert-R').style.background = "rgba(0, 123, 255, 0.1)";
+            };
+
+            socket.onclose = () => {
+                document.getElementById('connect-btn').innerText = "RECONECTAR";
+                document.getElementById('connect-btn').style.background = "#dc3545";
+            };
         }
 
         function send(cmd) {
-            console.log("Comando:", cmd);
-            // Efecto visual de vibración al tocar
-            if(window.navigator.vibrate) window.navigator.vibrate(50);
+            if(socket && socket.readyState === WebSocket.OPEN) {
+                socket.send(cmd);
+            }
+            // Feedback táctil (vibración corta)
+            if(window.navigator.vibrate && cmd !== 'S') {
+                window.navigator.vibrate(40);
+            }
         }
     </script>
 </body>
